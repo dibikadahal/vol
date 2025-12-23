@@ -5,18 +5,14 @@
 package View;
 
 import javax.swing.*;
-import Model.SignUpDAO;
-import Model.SignUpUser;
+import Model.Volunteer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.*;
-import java.awt.event.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Pattern;
-
-
+import Model.DataManager;
 
 
 /**
@@ -49,10 +45,9 @@ public class SignUpForm extends javax.swing.JPanel {
     private JLabel passwordError;
     
     private JButton submitButton;
-    private SignUpDAO signUpDAO;
     
     public SignUpForm(){
-        signUpDAO = new SignUpDAO();
+        
         initComponents();
         setupValidations();
         }
@@ -346,7 +341,7 @@ public class SignUpForm extends javax.swing.JPanel {
             return false;
         }
 
-        if (signUpDAO.usernameExists(username)) {
+        if (DataManager.usernameExists(username)) {
             usernameError.setText("Username already exists");
             usernameError.setForeground(java.awt.Color.RED);
             return false;
@@ -617,22 +612,23 @@ public class SignUpForm extends javax.swing.JPanel {
                 }
                     
                         // Create User object
-            SignUpUser user = new SignUpUser();
-            user.setFullName(fullNameField.getText().trim());
-            user.setDateOfBirth(dobField.getText().trim());
-            user.setGender((String) genderCombo.getSelectedItem());
-            user.setContactNumber(contactField.getText().trim());
-            user.setEmail(emailField.getText().trim());
-            user.setEducation(educationField.getText().trim());
-            user.setSkills(skillsArea.getText().trim());
-            user.setPastExperience(experienceArea.getText().trim());
-            user.setUsername(usernameField.getText().trim());
-            user.setPassword(new String(passwordField.getPassword()));
-            
-            user.setRole("user");
+                Volunteer user = new Volunteer(
+                fullNameField.getText().trim(),
+                dobField.getText().trim(),
+                (String) genderCombo.getSelectedItem(),
+                contactField.getText().trim(),
+                emailField.getText().trim(),
+                educationField.getText().trim(),
+                skillsArea.getText().trim(),
+                experienceArea.getText().trim(),
+                usernameField.getText().trim(),
+                new String(passwordField.getPassword()),
+                "user"
+        );
+
 
             // Save user
-            if (signUpDAO.saveUser(user)) {
+            if (DataManager.registerVolunteer(user)) {
                 JOptionPane.showMessageDialog(this, "Registration successful! Wait for the admin's decision.", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                 // Clear all fields after successful submission

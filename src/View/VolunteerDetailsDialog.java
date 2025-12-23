@@ -5,7 +5,7 @@
 package View;
 
 import javax.swing.*;
-import Model.SignUpUser;
+import Model.Volunteer;
 import java.awt.*;
 
 /**
@@ -14,9 +14,9 @@ import java.awt.*;
  */
 public class VolunteerDetailsDialog extends JDialog{
     
-    private SignUpUser volunteer;
+    private Volunteer volunteer;
     
-    public VolunteerDetailsDialog(JFrame parent, SignUpUser volunteer){
+    public VolunteerDetailsDialog(JFrame parent, Volunteer volunteer){
         super(parent, "Volunteer Details", true); //Modal dialog
         this.volunteer = volunteer;
         
@@ -166,7 +166,7 @@ public class VolunteerDetailsDialog extends JDialog{
     
     
     //Show the dialog with a blurred / dimmed backgrounf effect
-    public static void showDialog(JFrame parent, SignUpUser volunteer){
+    public static void showDialog(JFrame parent, Volunteer volunteer){
         //create glass pane for blur / dim effect
         final JPanel glassPane = new JPanel(){
             @Override

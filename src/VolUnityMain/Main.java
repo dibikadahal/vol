@@ -5,78 +5,41 @@
 package VolUnityMain;
 
 import View.LogInFrame;
-import Controller.LogInController;
-import Model.User;
-import Model.UserDAO;
-import java.util.logging.Logger;
+import Model.DataManager;
+import javax.swing.UIManager;
 
 /**
- *
- * @author ALIENWARE
+ *This class is the entry point for VolUnity application
+ * It initializes the data and launches login screen
  */
 public class Main {
-
-    private static final Logger logger = Logger.getLogger(Main.class.getName());
-
+    
     public static void main(String[] args) {
-        // Set Look and Feel (optional)
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+        // Set Look and Feel 
+                setLookAndFeel();  //change the behaviour and appearance of the UI
+        
+           //INITIALIZE IN MEMORY DATA
+           DataManager.initialize();
+           
+           //launch login screen
+           java.awt.EventQueue.invokeLater(() -> {
+                LogInFrame loginFrame = new LogInFrame();
+                loginFrame.setLocationRelativeTo(null);
+                loginFrame.setVisible(true);
+    });
+    }
+    
+    
+    private static void setLookAndFeel(){
+        try{
+            for(UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()){
+                if("Nimbus".equals(info.getName())){
+                    UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
-            }
-        } catch (Exception ex) {
-            logger.severe("Failed to set LookAndFeel: " + ex.getMessage());
         }
-
-        java.awt.EventQueue.invokeLater(() -> {
-            try{
-                   // Initialize DAO
-                 UserDAO userDAO = new UserDAO();
-
-            // Create admin if not exists
-                if (!userDAO.usernameExists("Dibika")) {
-                    User admin = new User(
-                            "Dibika",
-                            userDAO.hashPassword("Admin1"),
-                            "admin"
-                    );
-                    userDAO.addUser(admin);
-                    System.out.println("✓ Admin user created: Dibika/Admin1");
-                }else{
-                    System.out.println("Admin user already exists");
-                }
-                
-                
-                //print allusers 
-                System.out.println("\n=====Allusers in the system=======");
-                for (User u : userDAO.getAllUsers()){
-                    System.out.println(" " + u.getUsername() + " : " +u.getRole());
-                }
-                System.out.println("===========================\n");
-
-                    //create and show login frame
-                    LogInFrame loginFrame = new LogInFrame();
-                    loginFrame.setLocationRelativeTo(null); //create on center
-                    loginFrame.setVisible(true);
-                    
-                    //to connect controller with UserDAO
-                    new LogInController(loginFrame, userDAO);
-                    
-                    System.out.println("Login screen successfully loaded");
-            } catch (Exception e){
-                logger.severe("Error initializing application: " + e.getMessage());
-                e.printStackTrace();
-                
-                javax.swing.JOptionPane.showMessageDialog(
-                        null,
-                        "Failed to initialize application: " + e.getMessage(),
-                        "Startup Error",
-                        javax.swing.JOptionPane.ERROR_MESSAGE
-                                );
-            }
-        });
+    }catch(Exception e){
+        e.printStackTrace();
+        }
     }
-}
+ }

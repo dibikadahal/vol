@@ -10,13 +10,13 @@ import java.security.NoSuchAlgorithmException;
 /**
  *Hashes a password using SHA-256 algorithm 
  */
-public class PasswordHasher {
-    public static String hashPassword (String password){
+public class PasswordUtil {
+    public static String hash (String plainPassword){
         try{
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(password.getBytes());
+            byte[] hashBytes = digest.digest(plainPassword.getBytes());
             
-            //convert vyte array into hexadecimal string
+            //convert Byte array into hexadecimal string
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes){
                 String hex = Integer.toHexString (0xff & b);
@@ -32,7 +32,7 @@ public class PasswordHasher {
         }
     }
     public static boolean verifyPassword(String plainPassword, String hashedPassword) {
-        String hashedInput = hashPassword(plainPassword);
+        String hashedInput = hash(plainPassword);
         return hashedInput.equals(hashedPassword);
     }
 }

@@ -21,7 +21,7 @@ public class AdminController {
  //======APPROVE VOLUNTEERS==========
  public boolean approveVolunteer (Volunteer volunteer, int rowIndex){
      if (rowIndex != 0){
-         Volunteer first = DataManager.peekNextPending();
+         Volunteer first = DataManager.front();
          JOptionPane.showMessageDialog (view, "Please process volunteers in order!\n\n" +
                  "Queue rule : First volunteer must be proceeded first\n\n" +
                  "First in queue: " +  first.getFullName() + "\n" +
@@ -52,7 +52,7 @@ public class AdminController {
  //================DECLINE VOLUNTEERS================
     public boolean declineVolunteer(Volunteer volunteer, int rowIndex) {
         if (rowIndex != 0) {
-            Volunteer first = DataManager.peekNextPending();
+            Volunteer first = DataManager.front();
             JOptionPane.showMessageDialog(view,
                     "⚠ Please process volunteers in order!\n\n"
                     + "First in queue: " + first.getFullName(),

@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
  *
  * @author ALIENWARE
  */
-public class SignUpUser {
+public class Volunteer {
     private String fullName;
     private String dateOfBirth;
     private String gender;
@@ -28,19 +28,10 @@ public class SignUpUser {
     
     //registration tracking
     private String registrationDateTime;
-    private String status;
     
-    
-    //default constructor
-    public SignUpUser(){
-        //auto-set registration date / time and defaulat status
-        this.registrationDateTime = getCurrentDateTime();
-        this.status = "pending_user";
-        
-    }
-    
+
     //constructor with all fields (except auto-generated ones)
-    public SignUpUser(String fullName, String dateOfBirth, String gender, String contactNumber, String email, 
+    public Volunteer(String fullName, String dateOfBirth, String gender, String contactNumber, String email, 
             String education, String skills, String pastExperience, String username, String password, String role){
         this.fullName = fullName;
         this.dateOfBirth = dateOfBirth;
@@ -54,38 +45,20 @@ public class SignUpUser {
         this.password = password;
         this.role = role;
         this.registrationDateTime = getCurrentDateTime();
-        this.status = "pending_user";
     }
     
-    
-    //full constructor (inclusing all the fields)
-    public SignUpUser(String fullName, String dateOfBirth, String gender,String contactNumber, String email,
-            String education, String skills, String pastExperience, String username, String password, String role, 
-            String regisatrationDateTime, String status){
-        this.fullName = fullName;
-        this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
-        this.contactNumber = contactNumber;
-        this.email = email;
-        this.education = education;
-        this.skills = skills;
-        this.pastExperience = pastExperience;
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.registrationDateTime = registrationDateTime;
-        this.status = status;
-    }
     
     /**
-     * help to get the current date and time in the format such as: "2025-12-19 10:00 PM"
+     * help to get the current date and time in the format such as: "2025-12-19
+     * 10:00 PM"
      */
-    private String getCurrentDateTime(){
+    private String getCurrentDateTime() {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
         return now.format(formatter);
     }
-    
+     
+
     
     //=====DECLARING GETTERS AND SETTERS========
     //Full name
@@ -183,69 +156,5 @@ public class SignUpUser {
     }
     public void setRegistrationDateTime(String registrationDateTime){
         this.registrationDateTime = registrationDateTime;
-    }
-    
-    //status
-    public String getStatus(){
-        return status;
-    }
-    public void setStatus(String status){
-        this.status = status;
-    }
-    
-    
-    /*
-    Only for username, password and role
-    Converts to JSON for user.txt (authentication only)
-    */
-    public String toAuthJSON(){
-        return "{"
-                + "\"username\":\"" + username + "\","
-                + "\"password\":\"" + password + "\","
-                + "\"role\":\"" + role + "\""
-                + "}";
-    }
-    
-    
-    /*
-    Converts to JSON for userDetails.txt (all information)
-    */
-    public String toDetailsJSON() {
-        return "{"
-                + "\"username\":\"" + username + "\","
-                + "\"fullName\":\"" + fullName + "\","
-                + "\"dateOfBirth\":\"" + dateOfBirth + "\","
-                + "\"gender\":\"" + gender + "\","
-                + "\"contactNumber\":\"" + contactNumber + "\","
-                + "\"email\":\"" + email + "\","
-                + "\"education\":\"" + education + "\","
-                + "\"skills\":\"" + escapeJSON(skills) + "\","
-                + "\"pastExperience\":\"" + escapeJSON(pastExperience) + "\","
-                + "\"role\":\"" + role + "\"" + "\","
-                + "\"registrationDateTime\":\"" + registrationDateTime + "\","
-                + "\"status\":\"" + status + "\""
-                + "}";
-    }
-    
-    /*
-    helper method to escape special character in JSON strings
-*/
-        private String escapeJSON(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                  .replace("\"", "\\\"")
-                  .replace("\n", "\\n")
-                  .replace("\r", "\\r");
-    }
-        
-        @Override
-    public String toString() {
-        return "SignUpUser{"
-                + "fullName='" + fullName + '\''
-                + ", username='" + username + '\''
-                + ", email='" + email + '\''
-                + ", registrationDateTime='" + registrationDateTime + '\'' 
-                + ", status'" + status + '\''                
-                + '}';
     }
 }

@@ -10,9 +10,7 @@ import java.awt.Insets;
 import javax.swing.JButton;
 import java.awt.*;
 import javax.swing.border.AbstractBorder;
-import Model.User;
-import Model.PendingVolunteersDAO;
-import Model.UserDAO;
+import Controller.LogInController;
 
 
 
@@ -25,14 +23,14 @@ public class LogInFrame extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LogInFrame.class.getName());
     private RoundedFillButton customLoginButton;
     private RoundedFillButton customSignUpButton;
-    private UserDAO userDAO;
-    private PendingVolunteersDAO pendingDAO;
+
+    private LogInController controller;
     
     public LogInFrame() {
-        userDAO = new UserDAO();
-        pendingDAO = new PendingVolunteersDAO();
         initComponents();
         setupCustomButtons();
+        
+        controller = new LogInController(this);
     }
     
     private void setupCustomButtons(){
@@ -65,86 +63,10 @@ public class LogInFrame extends javax.swing.JFrame {
         String username = UsernameTextFieldLI.getText().trim();
         String password = new String(PasswordFieldLI.getPassword());
         
-        if(username.isEmpty() || password.isEmpty()){
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                    "Please enter both username and passoword",
-                    "LogIn Errror",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
-            return;
+        controller.handleLogin(username, password);
         }
         
-        //Step 1: Validate credentials (username + password)
-        User user = userDAO.validateLogin(username, password);
-        
-        if (user == null){
-            javax.swing.JOptionPane.showMessageDialog(this,
-                    "Invalid username or password",
-                    "Login Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        //Step 2: Check user Status
-        String status = pendingDAO.getUserStatus(username);
 
-        if (status == null) {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                    "User status not found. Please contact support.",
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        //Step 3: Handle based on status
-        switch (status) {
-            case "pending_user":
-                // User is waiting for admin approval
-                javax.swing.JOptionPane.showMessageDialog(this,
-                        "Your registration is pending.\nPlease wait for the admin's decision.",
-                        "Pending Approval",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
-                break;
-
-            case "approved_user":
-                // User is approved - allow login
-                javax.swing.JOptionPane.showMessageDialog(this,
-                        "Login successful! Welcome " + username,
-                        "Success",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
-
-                // Close login frame
-                this.dispose();
-        
-                
-                // Open appropriate dashboard based on role
-                if ("admin".equalsIgnoreCase(user.getRole())) {
-                    // Open admin dashboard
-                    // new AdminDashboard().setVisible(true);
-                    System.out.println("Admin logged in: " + username);
-                } else {
-                    // Open user dashboard
-                    // new UserDashboard(user).setVisible(true);
-                    System.out.println("User logged in: " + username);
-                }
-                break;
-                case "declined_user":
-                // User has been declined by admin
-                javax.swing.JOptionPane.showMessageDialog(this,
-                        "Your registration has been declined by the admin.\nPlease contact support for more information.",
-                        "Registration Declined",
-                        javax.swing.JOptionPane.ERROR_MESSAGE);
-                break;
-
-            default:
-                javax.swing.JOptionPane.showMessageDialog(this,
-                        "Unknown user status. Please contact support.",
-                        "Error",
-                        javax.swing.JOptionPane.ERROR_MESSAGE);
-                break;
-        }
-    }
-    
     //handle signup = opens sign up form
     private void handleSignUp(){
         //create a new JFrame to  hold the signUpForm panel

@@ -5,11 +5,11 @@
 package Controller;
 
 import Model.User;
-import Model.UserDAO;
+import Model.DataManager;
+import Model.PasswordUtil;
 import View.LogInFrame;
 import javax.swing.JOptionPane;
-import View.NewJFrame;
-
+import View.AdminDashboard;
 
 
 /**
@@ -18,62 +18,69 @@ import View.NewJFrame;
  */
 public class LogInController {
 
-    private LogInFrame loginFrame;
-    private UserDAO userDAO;
+    private LogInFrame view;
 
-    // Pass the existing UserDAO from Main
-    public LogInController(LogInFrame loginFrame, UserDAO userDAO) {
-        this.loginFrame = loginFrame;
-        this.userDAO = userDAO; // use the same instance
-        initController();
+    public LogInController(LogInFrame view) {
+            this.view = view;
     }
+    
 
-    private void initController() {
-        loginFrame.getLoginButton().addActionListener(e -> handleLogin());
-    }
-
-    public void handleLogin() {
-        
-        String username = loginFrame.getUsernameField().getText().trim();
-        String password = new String(loginFrame.getPasswordField().getPassword());
-
+    public void handleLogin(String username, String password) {
         if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(loginFrame, "Please enter username and password.", "Login Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(view, "Please enter both username and password.", "Login Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-
-        User user = userDAO.validateLogin(username, password); //DAO hashes password
+        User user = DataManager.getUser(username); 
 
         if (user == null) {
-            JOptionPane.showMessageDialog(loginFrame, "Invalid login credentials or account not approved.", "Login Error", JOptionPane.ERROR_MESSAGE);
+            
+            String status = DataManager.getVolunteerStatus(username);
+            handleVolunteerLogin(username, password, status);
             return;
         }
 
-        if (!"admin".equalsIgnoreCase(user.getRole())) {
-            JOptionPane.showMessageDialog(loginFrame, "Only admin can login here.", "Access Denied", javax.swing.JOptionPane.WARNING_MESSAGE);
+        if (!PasswordUtil.verifyPassword(password, user.getHashedPassword())) {
+            JOptionPane.showMessageDialog(view, "Invalid username or password", "LogIn error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        JOptionPane.showMessageDialog(loginFrame, "Login successful! Opening dashboard...", "Welcome", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-
-        NewJFrame dashboard = new NewJFrame();
-        dashboard.setVisible(true);
-
         openDashboard(user);
     }
     
-    public void openDashboard(User user){        
-        //create dashboard view
-        NewJFrame dashboardView = new NewJFrame();
-        dashboardView.setLocationRelativeTo(null);
-        dashboardView.setVisible(true);
+    private void handleVolunteerLogin(String username, String password,  String status){
+        if(status == null){
+            JOptionPane.showMessageDialog(view, "Invalid username or password",
+                    "LogIn Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         
-        //create dashboard controller
-        DashboardController dashboardController = new DashboardController(
-        dashboardView, userDAO, user);
-        
-        //close login frame
-        loginFrame.dispose();
-            }
+        switch (status) {
+            case "pending_user":
+                JOptionPane.showMessageDialog(view, "Your registration is pending. \nPlease wait for the admin;s approval",
+                        "Pending Approval", JOptionPane.INFORMATION_MESSAGE);
+                break;
+                
+            case "declined_user":
+                JOptionPane.showMessageDialog(view, "Ypur registration has been cancelled.\nPlease contact admin",
+                        "Registration declined", JOptionPane.ERROR_MESSAGE);
+                break;
+        }
+    }
+    
+    private void openDashboard(User user){        
+        JOptionPane.showMessageDialog(view,
+                "Login successful! Welcome " + user.getUsername(),
+                "Success", JOptionPane.INFORMATION_MESSAGE);
+
+        if ("admin".equalsIgnoreCase(user.getRole())) {
+            AdminDashboard dashboard = new AdminDashboard(user);
+            dashboard.setLocationRelativeTo(null);
+            dashboard.setVisible(true);
+            view.dispose();
+        } else {
+            JOptionPane.showMessageDialog(view,
+                    "User dashboard coming soon!",
+                    "Info", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
 }

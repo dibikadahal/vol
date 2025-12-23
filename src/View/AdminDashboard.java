@@ -4,49 +4,54 @@
  */
 package View;
 
-import java.awt.event.ActionListener;
+
+import Model.Volunteer;
+import Controller.AdminController;
+import Controller.VolunteerCRUDController;
+import Model.DataManager;
+import Model.User;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.DefaultCellEditor;  // ← FIXED: No ".table" here!
+import javax.swing.DefaultCellEditor;
 import java.awt.Font;
 import javax.swing.Timer;
-import View.SignUpForm;
-import View.VolunteerDetailsDialog;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import Model.PendingVolunteersDAO;
-import Model.SignUpUser;
 
 
-        
 
-/**
- *
- * @author ALIENWARE
- */
-public class NewJFrame extends javax.swing.JFrame {
+ 
+public class AdminDashboard extends javax.swing.JFrame {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(NewJFrame.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(AdminDashboard.class.getName());
     private Timer dateTimeTimer;
-    private CardLayout cardLayout;
-    private JPanel mainPanel;
-    private SignUpForm signUpForm;
-    private PendingVolunteersDAO pendingDAO;
-    private DefaultTableModel tableModel;
-    private List<SignUpUser> cachedPendingVolunteers;
+    
+    private List<Volunteer> cachedVolunteers;  // For pending volunteers table
+    //private List<Volunteer> allVolunteers;     // For CRUD volunteers table
+
+    private DefaultTableModel pendingTableModel;  // For pending table
+    //private DefaultTableModel volunteerTableModel;  // For CRUD table
+
+    private AdminController controller;
+    //private VolunteerCRUDController crudController;  
+    private User currentUser;
 
 
     
     /**
      * Creates new form NewJFrame
      */
-    public NewJFrame() {
+    public AdminDashboard(User user) {
+        this.currentUser = user;
+        
         initComponents();
+        
+        controller = new AdminController(this);
         setupPendingVolunteerTable();
+        //crudController = new VolunteerCRUDController(this);
+        
         
         
         //make JFrame full screen / maximized
@@ -77,6 +82,7 @@ public class NewJFrame extends javax.swing.JFrame {
         // ===== END OF ROUNDED PANELS SECTION =====
         
         
+        /*
         //customize the table row height
         volunteerTable.setRowHeight(30);
         
@@ -90,12 +96,10 @@ public class NewJFrame extends javax.swing.JFrame {
         }
         
         volunteerTable.getTableHeader().setFont(new Font("Times New Roman", Font.BOLD,18));
-            
+    */
     }
     
     private void setupPendingVolunteerTable(){
-        pendingDAO = new PendingVolunteersDAO();
-        
         //configuring the existing table
         pendingVolunteerTable.setRowHeight(40);
         pendingVolunteerTable.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -104,10 +108,10 @@ public class NewJFrame extends javax.swing.JFrame {
         pendingVolunteerTable.getTableHeader().setForeground(Color.WHITE);
         
         //get the table model
-        tableModel = (DefaultTableModel) pendingVolunteerTable.getModel();
+        pendingTableModel = (DefaultTableModel) pendingVolunteerTable.getModel();
         
-        //Clear any existinmg data
-        tableModel.setRowCount(0);
+        //Clear any existing data
+        pendingTableModel.setRowCount(0);
         
         //add button renderers and editors for button columns
         pendingVolunteerTable.getColumn("Accept").setCellRenderer(new ButtonRenderer());
@@ -132,41 +136,38 @@ public class NewJFrame extends javax.swing.JFrame {
         
         //load initial data
         loadPendingVolunteers();
+        //setupVolunteerCRUDTable();
     }
     
     
     //============LOAD PENDING VOLUNTEERS FROM THE DATABASE==================
     private void loadPendingVolunteers(){
         //clear existing rows
-        tableModel.setRowCount(0);
+        pendingTableModel.setRowCount(0);
         
-        //get pending volunteers (sorted by registration date - queue order)
-        cachedPendingVolunteers = pendingDAO.getPendingVolunteers();
-        List<SignUpUser> pendingVolunteers = cachedPendingVolunteers;
-
+            cachedVolunteers = DataManager.getPendingVolunteers();
+            
+            if(cachedVolunteers.isEmpty()){
+                return;
+            }
         
-        //check if the queue is empty
-        if (pendingVolunteers.isEmpty()){
-            JOptionPane.showMessageDialog(this, "No pending volunteers at the moment",
-                    "Queue Empty", JOptionPane.INFORMATION_MESSAGE);
-                    return;
-        }
-        
-        
-        // Display queue info in console (for debugging)
+            //console output
         System.out.println("\n╔══════════════════════════════════════╗");
         System.out.println("║       VOLUNTEER QUEUE STATUS         ║");
         System.out.println("╠══════════════════════════════════════╣");
-        System.out.println("║ Total Pending: " + String.format("%-22d", pendingVolunteers.size()) + "║");
-        System.out.println("║ Front (First): " + String.format("%-22s", pendingDAO.front().getFullName()) + "║");
-        System.out.println("║ Rear (Last):   " + String.format("%-22s", pendingDAO.rear().getFullName()) + "║");
-        System.out.println("║ Queue Full:    " + String.format("%-22s", pendingDAO.isFull() ? "YES" : "NO") + "║");
-        System.out.println("║ Queue Size:    " + String.format("%-22s", pendingDAO.getQueueSize() + "/100") + "║");
+        System.out.println("║ Total Pending: " + String.format("%-22d", cachedVolunteers.size()) + "║");
+
+        Volunteer first = DataManager.front();  // FIXED
+        if (first != null) {
+            System.out.println("║ Front (First): " + String.format("%-22s", first.getFullName()) + "║");
+        }
+        System.out.println("║ Queue Size:    " + String.format("%-22s", DataManager.getQueueSize() + "/100") + "║");
         System.out.println("╚══════════════════════════════════════╝\n");
+
         
-        //Populate tab;e
+        //Your existing loop to populate table
         int serialNo = 1;
-        for (SignUpUser volunteer : pendingVolunteers){
+        for (Volunteer volunteer : cachedVolunteers){
             Object[] row = {
                 serialNo++,
                 volunteer.getFullName(),
@@ -175,10 +176,110 @@ public class NewJFrame extends javax.swing.JFrame {
                 "Decline", //button
                 "View" //button
             }; 
-            tableModel.addRow(row);
+            pendingTableModel.addRow(row);
         }
     }
     
+    
+    //================VOLUNTEER CRUD TABLE SETUP (to manage volunteers)=======================
+        /*
+    private void setupVolunteerCRUDTable() {
+            // Setup columns for CRUD operations
+            String[] columns = {"S.No", "Name", "Contact", "Email", "Username", "Edit", "Delete"};
+            volunteerTableModel = new DefaultTableModel(columns, 0) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return column == 5 || column == 6; // Only Edit and Delete
+                }
+            };
+                volunteerTable.setModel(volunteerTableModel);
+
+                
+                // Column widths
+            volunteerTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+            volunteerTable.getColumnModel().getColumn(1).setPreferredWidth(150);
+            volunteerTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+            volunteerTable.getColumnModel().getColumn(3).setPreferredWidth(150);
+            volunteerTable.getColumnModel().getColumn(4).setPreferredWidth(100);
+            volunteerTable.getColumnModel().getColumn(5).setPreferredWidth(80);
+            volunteerTable.getColumnModel().getColumn(6).setPreferredWidth(80);
+            
+            // Button renderers/editors for CRUD
+            volunteerTable.getColumn("Edit").setCellRenderer(new CRUDButtonRenderer());
+            volunteerTable.getColumn("Edit").setCellEditor(new CRUDButtonEditor("Edit"));
+
+            volunteerTable.getColumn("Delete").setCellRenderer(new CRUDButtonRenderer());
+            volunteerTable.getColumn("Delete").setCellEditor(new CRUDButtonEditor("Delete"));
+            
+            
+           
+            // Setup search
+        searchTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                handleSearch();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                handleSearch();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                handleSearch();
+            }
+        });
+        
+    }
+        
+        private void loadAllVolunteers() {
+        volunteerTableModel.setRowCount(0);
+
+        allVolunteers = crudController.getAllVolunteers();
+
+        if (allVolunteers.isEmpty()) {
+            // Table is just empty, no dialog needed
+            return;
+        }
+
+        int serialNo = 1;
+        for (Volunteer v : allVolunteers) {
+            Object[] row = {
+                serialNo++,
+                v.getFullName(),
+                v.getContactNumber(),
+                v.getEmail(),
+                v.getUsername(),
+                "Edit",
+                "Delete"
+            };
+            volunteerTableModel.addRow(row);
+        }
+    }
+}
+
+//search code
+/*
+    private void handleSearch() {
+        String searchTerm = searchTextField.getText().trim();
+        
+        volunteerTableModel.setRowCount(0);
+        allVolunteers = crudController.searchVolunteers(searchTerm);
+        
+        int serialNo = 1;
+        for (Volunteer v : allVolunteers) {
+            Object[] row = {
+                serialNo++,
+                v.getFullName(),
+                v.getContactNumber(),
+                v.getEmail(),
+                v.getUsername(),
+                "Edit",
+                "Delete"
+            };
+            volunteerTableModel.addRow(row);
+        }
+    }
+*/
+
       
     //=========BUTTON RENDERER - Makes button appear in the table cells
     class ButtonRenderer extends JButton implements javax.swing.table.TableCellRenderer{
@@ -264,10 +365,10 @@ public class NewJFrame extends javax.swing.JFrame {
         public Object getCellEditorValue(){
             if (clicked){
                 //get the volunteer from he row
-                String volunteerName = (String) tableModel.getValueAt(currentRow, 1);
+                String volunteerName = (String) pendingTableModel.getValueAt(currentRow, 1);
                 
                 //get the actual volunteer object
-                SignUpUser selectedVolunteer = cachedPendingVolunteers.get(currentRow);
+                Volunteer selectedVolunteer = cachedVolunteers.get(currentRow);
 
                 
                 if (selectedVolunteer == null) {
@@ -298,107 +399,22 @@ public class NewJFrame extends javax.swing.JFrame {
     
     
     //=====HANDLE ACCEPT BUTTON======
-    private void handleAccept (SignUpUser volunteer, int row){
-        // check if this is thge first volunteer in the queue (FIFO)
-        if (row != 0) {
-            JOptionPane.showMessageDialog(this,
-                    "⚠ Please process volunteers in order!\n\n"
-                    + "Queue Rule: First volunteer must be processed first\n\n"
-                    + "➤ First in queue: " + pendingDAO.front().getFullName() + "\n"
-                    + "  (Registered: " + pendingDAO.front().getRegistrationDateTime() + ")",
-                    "Queue Order Required",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Accept volunteer: " + volunteer.getFullName() + "?\n\n"
-                + "Registration Date: " + volunteer.getRegistrationDateTime() + "\n"
-                + "Email: " + volunteer.getEmail() + "\n\n"
-                + "This will grant them access to the system.",
-                "Confirm Accept",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-        
-        if (confirm == JOptionPane.YES_OPTION) {
-            // Update status to "approved_user"
-            if (pendingDAO.updateVolunteerStatus(volunteer.getUsername(), "approved_user")) {
-                JOptionPane.showMessageDialog(this,
-                        "✓ " + volunteer.getFullName() + " has been APPROVED!\n\n"
-                        + "They can now login to the system with their credentials.\n\n"
-                        + "Username: " + volunteer.getUsername(),
-                        "Volunteer Approved",
-                        JOptionPane.INFORMATION_MESSAGE);
-                // Reload table (volunteer will be removed from queue)
-                loadPendingVolunteers();
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        " Failed to update volunteer status.\n\n"
-                        + "Please try again or contact support.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);        
-             }
+    private void handleAccept(Volunteer volunteer, int row) {
+        if (controller.approveVolunteer(volunteer, row)) {
+            loadPendingVolunteers();  // Refresh table
         }
     }
     
     
     //=========HANDLE DECLINE BUTTON=========
-    private void handleDecline(SignUpUser volunteer, int row){
-        //Check if this is the first volunteer in the queue
-        if (row != 0) {
-            JOptionPane.showMessageDialog(this,
-                    "⚠ Please process volunteers in order!\n\n"
-                    + "Queue Rule: First volunteer must be processed first\n\n"
-                    + "➤ First in queue: " + pendingDAO.front().getFullName() + "\n"
-                    + "  (Registered: " + pendingDAO.front().getRegistrationDateTime() + ")",
-                    "Queue Order Required",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        String reason = JOptionPane.showInputDialog(this,
-                "Decline volunteer: " + volunteer.getFullName() + "\n\n"
-                + "Optional: Enter reason for decline (or leave blank):",
-                "Confirm Decline",
-                JOptionPane.WARNING_MESSAGE);
-        
-        if (reason == null) {
-            // User clicked cancel
-            return;
-        }
-
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to DECLINE?\n\n"
-                + "Volunteer: " + volunteer.getFullName() + "\n"
-                + "Registration Date: " + volunteer.getRegistrationDateTime() + "\n\n"
-                + "They will NOT be able to access the system.",
-                "Final Confirmation",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            // Update status to "declined_user"
-            if (pendingDAO.updateVolunteerStatus(volunteer.getUsername(), "declined_user")) {
-                JOptionPane.showMessageDialog(this,
-                        " " + volunteer.getFullName() + " has been DECLINED.\n\n"
-                        + "They will see a decline message when trying to login.",
-                        "Volunteer Declined",
-                        JOptionPane.INFORMATION_MESSAGE);
-
-                // Reload table (volunteer will be removed from queue)
-                loadPendingVolunteers();
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        " Failed to update volunteer status.\n\n"
-                        + "Please try again or contact support.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
+    private void handleDecline(Volunteer volunteer, int row) {
+        if (controller.declineVolunteer(volunteer, row)) {
+            loadPendingVolunteers();  // Refresh table
         }
     }
     
     //==========HANDLE VIEW BUTTON===============
-    private void handleView(SignUpUser volunteer){
+    private void handleView(Volunteer volunteer){
         //show modal dialog with volunteer details and bluer effect
         View.VolunteerDetailsDialog.showDialog(this, volunteer);
     }
@@ -812,7 +828,7 @@ public class NewJFrame extends javax.swing.JFrame {
 
     
 
-// ============== COMPLETE FIX FOR YOUR NewJFrame.java ==============
+// ============== COMPLETE FIX FOR YOUR AdminDashboard.java ==============
 // 1. REPLACE your showDashboard method with this:
     public void showDashboard(String role, String username) {
 
