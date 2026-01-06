@@ -97,7 +97,7 @@ public class ValidationUtil {
     }
     
     
-    //VALIDATE SKILLSS
+    //VALIDATE SKILLS
     public static String validateSkills(String skills){
         if(skills == null || skills.trim().isEmpty()){
             return "Skills are required";
@@ -138,4 +138,151 @@ public class ValidationUtil {
         return null;
     }
     
+    //VALIDATE EVENT NAME
+    public static String validateEventName(String eventName){
+        if (eventName == null || eventName.trim().isEmpty()){
+            return "Event name is required";
+        }
+        if (eventName.trim().length()<3){
+            return "Event name must be at least 3 characters";
+        }
+        return null;
+    }
+    
+    
+    //VALIDATE DESCRIPTION
+        public static String validateDescription(String description){
+        if (description == null || description.trim().isEmpty()){
+            return "Description is required";
+        }
+        if (description.trim().length() < 10){
+            return "Description must be at least 10 characters";
+        }
+        return null;
+    }
+
+     //VALIDATE EVENT DATE (accepts yyyy-MM-dd or yyyy/MM/dd)
+    public static String validateEventDate(String dateStr){
+        if (dateStr == null || dateStr.trim().isEmpty()){
+            return "Date is required";
+        }
+        
+        SimpleDateFormat[] formats = {
+            new SimpleDateFormat("yyyy-MM-dd"),
+            new SimpleDateFormat("yyyy/MM/dd")
+        };
+        
+        for (SimpleDateFormat format : formats) {
+            format.setLenient(false);
+            try {
+                format.parse(dateStr.trim());
+                return null; // Valid date
+            } catch (ParseException e) {
+                // Try next format
+            }
+        }
+        return "Invalid date format (use yyyy-MM-dd)";
+    }
+    
+    
+    //VALIDATE END DATE IS AFTER THE START DATE
+    public static String validateDateRange(String startDateStr, String endDateStr){
+        //check if both dates are valid
+                String startValidation = validateEventDate(startDateStr);
+        if (startValidation != null) {
+            return startValidation;
+        }
+        
+        String endValidation = validateEventDate(endDateStr);
+        if (endValidation != null) {
+            return endValidation;
+        }
+        try {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            // Replace forward slashes with hyphens for consistent parsing
+            String startStr = startDateStr.replace("/", "-");
+            String endStr = endDateStr.replace("/", "-");
+
+            Date startDate = format.parse(startStr);
+            Date endDate = format.parse(endStr);
+
+            if (endDate.before(startDate)) {
+                return "End date must be after or equal to start date";
+            }
+            return null; // Valid date range
+
+        } catch (ParseException e) {
+            return "Invalid date format";
+        }
+    }
+        
+        
+        //VALIDATE LOCATION
+        public static String validateLocation(String location){
+        if (location == null || location.trim().isEmpty()){
+            return "Location is required";
+        }
+        return null;
+    }
+        
+     //VALIDATE EVENT STATUS
+    public static String validateEventStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return "Event status is required";
+        }
+        return null;
+    }
+    
+    //VALIDATE ORGANIZER NAME
+    public static String validateOrganizerName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "Organizer name is required";
+        }
+        if (!NAME_PATTERN.matcher(name).matches()) {
+            return "Name should contain only letters";
+        }
+        return null;
+    }
+    
+    
+    //VALIDATE ORGANIZER CONTACT
+    public static String validateOrganizerContact(String contact) {
+        if (contact == null || contact.trim().isEmpty()) {
+            return "Organizer contact is required";
+        }
+        if (!PHONE_PATTERN.matcher(contact).matches()) {
+            return "Invalid phone number format (10 digits)";
+        }
+        return null;
+    }
+    
+    // Helper method: Check if string is not empty
+    public static boolean isNotEmpty(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
+    // Helper method: Check minimum length
+    public static boolean hasMinLength(String value, int minLength) {
+        return value != null && value.trim().length() >= minLength;
+    }
+
+    // Helper method: Check if valid date format
+    public static boolean isValidDate(String dateStr) {
+        return validateEventDate(dateStr) == null;
+    }
+
+    // Helper method: Check if end date is after start date
+    public static boolean isEndDateAfterStartDate(String startDateStr, String endDateStr) {
+        return validateDateRange(startDateStr, endDateStr) == null;
+    }
+
+    // Helper method: Check if string contains only letters and spaces
+    public static boolean isAlphaWithSpaces(String value) {
+        return value != null && !value.trim().isEmpty() && NAME_PATTERN.matcher(value).matches();
+    }
+
+    // Helper method: Check if valid phone number
+    public static boolean isValidPhone(String phone) {
+        return phone != null && PHONE_PATTERN.matcher(phone).matches();
+    }
 }
