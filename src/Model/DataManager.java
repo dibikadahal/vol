@@ -17,6 +17,7 @@ public class DataManager {
     private static final ArrayList<User> users = new ArrayList<>();
     private static final ArrayList<Volunteer> approvedVolunteers = new ArrayList<>();
     private static final ArrayList<Volunteer> declinedVolunteers = new ArrayList<>();
+    private static ArrayList<Event> events = new ArrayList<>();
     // For pending volunteers queue
     //private static final ArrayList<Volunteer> pendingVolunteers = new ArrayList<>();
 
@@ -35,6 +36,7 @@ public class DataManager {
     public static void initialize(){
         loadDefaultAdmin();
         loadDemoData();
+        loadDemoEvents();
     }
     
     
@@ -94,6 +96,78 @@ public class DataManager {
         */
     }
     
+    private static void loadDemoEvents(){
+        Event event1 = new Event(
+                "EVT001",
+                "Community Cleanup Drive",
+                "A community initiative to clean up  local parks and public spaces. Volunteers will be provided with gloves and trash bags.",
+                "2026-01-15",
+                "2026-01-15",
+                "Central Park, Kathmandu",
+                "Community Service",
+                "Upcoming",
+                "Ramesh Kumar",
+                "9841235647"
+        );
+        
+        Event event2 = new Event(
+                "EVT002",
+                "Youth Leadership Workshop",
+                "An interactive workshop designed to develop leadership skills among young volunteers through team activities and discussions.",
+                "2026-01-20",
+                "2026-01-22",
+                "Convention Hall, Patan",
+                "Workshop",
+                "Upcoming",
+                "Sita Sharma",
+                "9851234568"
+        );
+        
+        Event event3 = new Event(
+                "EVT003",
+                "Blood Donation Camp",
+                "Annual blood donation drive in partnership with local hospitals. All donors will receive certificates and refreshments.",
+                "2026-02-01",
+                "2026-02-01",
+                "City Hospital, Lalitpur",
+                "Community Service",
+                "Upcoming",
+                "Dr. Anil Thapa",
+                "9861234569"
+        );
+
+        Event event4 = new Event(
+                "EVT004",
+                "Digital Literacy Training",
+                "Free computer and internet literacy training for elderly citizens. Basic computer operations and online safety will be covered.",
+                "2026-02-10",
+                "2026-02-15",
+                "Community Center, Bhaktapur",
+                "Training",
+                "Upcoming",
+                "Maya Gurung",
+                "9871234570"
+        );
+        
+        Event event5 = new Event(
+                "EVT005",
+                "Charity Fundraiser Gala",
+                "An evening gala event to raise funds for underprivileged children's education. Cultural performances and dinner included.",
+                "2026-02-28",
+                "2026-02-28",
+                "Grand Ballroom, Hotel Yak & Yeti",
+                "Fundraiser",
+                "Planning",
+                "Prakash Rai",
+                "9881234571"
+        );
+        
+        events.add(event1);
+        events.add(event2);
+        events.add(event3);
+        events.add(event4);
+        events.add(event5);
+    }    
     
     //==============QUEUE OPERATIONS (Manual Implementation)============
     //check if the queue is empty
@@ -254,10 +328,6 @@ public class DataManager {
         declinedVolunteers.add(volunteer);
        return true;
     }
-
-    
-    
-    
     
     //===========IMPLEMENTATION OF CRUD OPERATIONS================
     
@@ -431,6 +501,23 @@ public class DataManager {
         return true;
         
     }
+    
+    
+    //ADD GETTER METHOD FOR EVENTS
+    public static ArrayList<Event> getEvents(){
+        return events;
+    }
+    
+    //method to get event by id
+    public static Event getEventById(String eventId){
+        for (Event event : events){
+            if (event.getEventId().equals(eventId)){
+                return event;
+            }
+        }
+        return null;
+    }
+
 
     
     //===========STATISTICS==================
