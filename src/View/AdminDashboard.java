@@ -773,13 +773,13 @@ private void handleDecline(Volunteer volunteer) {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Event ID", "Name", "Start Date", "Duration", "Location", "Organizer's name"
+                "Event ID", "Name", "Start Date", "Duration", "Location", "Organizer's name", "Options"
             }
         ));
         jScrollPane2.setViewportView(jTable1);
