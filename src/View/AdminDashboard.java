@@ -781,9 +781,7 @@ private void handleDecline(Volunteer volunteer) {
         navigator.setBackground(new java.awt.Color(91, 158, 165));
         navigator.setLayout(null);
 
-        adminDashboardButton.setBackground(new java.awt.Color(63, 164, 203));
-        adminDashboardButton.setFont(new java.awt.Font("Segoe UI Emoji", 1, 18)); // NOI18N
-        adminDashboardButton.setForeground(new java.awt.Color(255, 255, 255));
+        adminDashboardButton.setFont(new java.awt.Font("Segoe UI Emoji", 0, 18)); // NOI18N
         adminDashboardButton.setText("🖥️ Admin Dashboard");
         adminDashboardButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -981,7 +979,6 @@ private void handleDecline(Volunteer volunteer) {
                 "Event ID", "Name", "Start Date", "Duration", "Location", "Organizer's name", "Options"
             }
         ));
-        jEventTable.setRowHeight(50);
         jScrollPane2.setViewportView(jEventTable);
 
         EventPanel.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 230, 1330, 720));
