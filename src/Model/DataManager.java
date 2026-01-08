@@ -6,6 +6,7 @@ package Model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedList;
 import Model.Volunteer;
 
 /**
@@ -15,7 +16,7 @@ import Model.Volunteer;
 public class DataManager {
     //Storage structures
     private static final ArrayList<User> users = new ArrayList<>();
-    private static final ArrayList<Volunteer> approvedVolunteers = new ArrayList<>();
+    private static LinkedList<Volunteer> approvedVolunteers = new LinkedList<>();
     private static final ArrayList<Volunteer> declinedVolunteers = new ArrayList<>();
     private static ArrayList<Event> events = new ArrayList<>();
     // For pending volunteers queue
@@ -477,7 +478,7 @@ public class DataManager {
     }
     
     //access approved volunteers
-    public static ArrayList<Volunteer> getApprovedVolunteers(){
+    public static LinkedList<Volunteer> getApprovedVolunteers(){
         return approvedVolunteers;
     }
     
@@ -500,6 +501,24 @@ public class DataManager {
         
         return true;
         
+    }
+    
+    
+    //a method to delete approved volunteer by id
+    public static boolean deleteApprovedVolunteer(int volunteerId){
+    return approvedVolunteers.removeIf (
+            v -> v.getVolunteerId() == volunteerId
+        );
+    }
+    
+    //add method to get volunteer by ID
+    public static Volunteer getApprovedVolunteerById(int volunteerId){
+        for (Volunteer volunteer : approvedVolunteers){
+            if (volunteer.getVolunteerId() == (volunteerId)){
+                return volunteer;
+            }
+        }
+        return null;
     }
     
     
