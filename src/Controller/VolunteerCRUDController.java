@@ -10,7 +10,7 @@ import Model.PasswordUtil;
 import Model.ValidationUtil;
 import View.AdminDashboard;
 import java.util.LinkedList;
-
+import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 import java.util.List;
 
@@ -293,4 +293,21 @@ public class VolunteerCRUDController {
 
         return null;
     }
+    
+    public void refreshApprovedVolunteerTable(){
+        DefaultTableModel model = (DefaultTableModel) dashboard.getVolunteerTable().getModel();
+        model.setRowCount(0);
+        
+        for (Volunteer v : DataManager.getApprovedVolunteers()) {
+            model.addRow(new Object[]{
+                v.getVolunteerId(),
+                v.getFullName(),
+                v.getGender(),
+                v.getContactNumber(),
+                v.getEmail(),
+             //   v.getField(),
+                v.getUsername()
+            });
+        }
+  }
 }
