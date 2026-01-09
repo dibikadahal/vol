@@ -48,6 +48,8 @@ public class AdminDashboard extends javax.swing.JFrame {
     
     private List<Model.Event> cachedEvents;
     private DefaultTableModel eventsTableModel;
+    private javax.swing.JLabel lblTotalEvents;
+
 
         
     /**
@@ -99,9 +101,12 @@ public class AdminDashboard extends javax.swing.JFrame {
         // ===== END OF ROUNDED PANELS SECTION =====
         
         
+        
+        //=============SET UP TOTAL VOLUNTEER PANEL===================
         totalVolunteersPanel.removeAll(); 
         totalVolunteersPanel.setLayout(new BoxLayout(totalVolunteersPanel, BoxLayout.Y_AXIS));
         
+        totalVolunteersPanel.add(Box.createVerticalGlue());
         JLabel titleLabel = new JLabel("TOTAL VOLUNTEERS");
         titleLabel.setFont(new Font("Perpetua Titling MT", Font.BOLD, 24));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -110,10 +115,37 @@ public class AdminDashboard extends javax.swing.JFrame {
      
         lblTotalVolunteers.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblTotalVolunteers.setVerticalAlignment(SwingConstants.BOTTOM);
-        totalVolunteersPanel.add(Box.createVerticalGlue());
         totalVolunteersPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         totalVolunteersPanel.add(lblTotalVolunteers);
+        totalVolunteersPanel.add(Box.createVerticalGlue());
+              
         
+        //=============TO SET UP TOTAL EVENTS Panel======================
+totalEventsPanel.removeAll();
+        totalEventsPanel.setLayout(new BoxLayout(totalEventsPanel, BoxLayout.Y_AXIS));
+
+        JLabel titleLabelEvents = new JLabel("TOTAL EVENTS");
+        titleLabelEvents.setFont(new Font("Perpetua Titling MT", Font.BOLD, 24));
+        titleLabelEvents.setAlignmentX(Component.CENTER_ALIGNMENT);
+        titleLabelEvents.setForeground(new Color(50, 50, 50));
+
+// Initialize lblTotalEvents HERE
+        lblTotalEvents = new JLabel("5");
+        lblTotalEvents.setFont(new Font("Perpetua Titling MT", Font.BOLD, 150));
+        lblTotalEvents.setForeground(new Color(50, 50, 50));
+        lblTotalEvents.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblTotalEvents.setVerticalAlignment(SwingConstants.BOTTOM);
+
+        totalEventsPanel.add(Box.createVerticalGlue());  // Push content to center
+        totalEventsPanel.add(titleLabelEvents);
+        totalEventsPanel.add(Box.createRigidArea(new Dimension(0, 20)));  
+        totalEventsPanel.add(lblTotalEvents);
+        totalEventsPanel.add(Box.createVerticalGlue());
+        
+        
+        // ADD THIS DEBUG LINE:
+        System.out.println("DEBUG: Total Events in DataManager = " + DataManager.getTotalEvents());
+        System.out.println("DEBUG: Events list = " + DataManager.getEvents());
 
         /*
         totalVolunteersPanel.add(lblTotalVolunteers, BorderLayout.CENTER);
@@ -152,6 +184,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         
         calendarPanel.setPreferredSize(new Dimension(CalendarPanel.getWidth(), CalendarPanel.getHeight()));
         calendarPanel.setVisible(true);
+        
+        refreshDashboardStats();
 
     }
     
@@ -408,6 +442,8 @@ public class AdminDashboard extends javax.swing.JFrame {
     // ========== UPDATE THIS METHOD ==========
     public void refreshDashboardStats() {
     lblTotalVolunteers.setText(String.valueOf(DataManager.getTotalVolunteers()));
+     lblTotalEvents.setText(String.valueOf(DataManager.getTotalEvents()));
+
 }
     
     
@@ -885,12 +921,19 @@ private void handleDecline(Volunteer volunteer) {
                     "Confirm Delete", JOptionPane.YES_NO_OPTION);
 
             if (confirm == JOptionPane.YES_OPTION) {
+                boolean success = DataManager.deleteEvent(eventId);
+                if(success){
                 // TODO: Implement delete logic in DataManager
                 JOptionPane.showMessageDialog(this, "Event deleted successfully!",
-                        "Success", JOptionPane.INFORMATION_MESSAGE);
-                loadEvents(); // Refresh table
-            }
+                        "Success", JOptionPane.INFORMATION_MESSAGE);            
+                refreshEventsTable(); 
+                refreshDashboardStats();
+            }else{
+                    JOptionPane.showMessageDialog(this, "Failed to delete event!",
+                            "Error", JOptionPane.ERROR_MESSAGE);  
+                }
     }
+ }
  
     
    
@@ -926,6 +969,7 @@ private void handleDecline(Volunteer volunteer) {
         welcomeLabel = new javax.swing.JLabel();
         dateTimeLabel = new javax.swing.JLabel();
         totalEventsPanel = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
         upcomingEventsPanel = new javax.swing.JPanel();
         volunteerPanel = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
@@ -1005,11 +1049,25 @@ private void handleDecline(Volunteer volunteer) {
         adminDashboardPanel.setBackground(new java.awt.Color(214, 228, 231));
         adminDashboardPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        totalVolunteersPanel.setLayout(new java.awt.GridBagLayout());
-
         lblTotalVolunteers.setFont(new java.awt.Font("Perpetua Titling MT", 1, 150)); // NOI18N
         lblTotalVolunteers.setText("0");
-        totalVolunteersPanel.add(lblTotalVolunteers, new java.awt.GridBagConstraints());
+
+        javax.swing.GroupLayout totalVolunteersPanelLayout = new javax.swing.GroupLayout(totalVolunteersPanel);
+        totalVolunteersPanel.setLayout(totalVolunteersPanelLayout);
+        totalVolunteersPanelLayout.setHorizontalGroup(
+            totalVolunteersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, totalVolunteersPanelLayout.createSequentialGroup()
+                .addContainerGap(128, Short.MAX_VALUE)
+                .addComponent(lblTotalVolunteers)
+                .addGap(120, 120, 120))
+        );
+        totalVolunteersPanelLayout.setVerticalGroup(
+            totalVolunteersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, totalVolunteersPanelLayout.createSequentialGroup()
+                .addContainerGap(75, Short.MAX_VALUE)
+                .addComponent(lblTotalVolunteers)
+                .addGap(44, 44, 44))
+        );
 
         adminDashboardPanel.add(totalVolunteersPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 190, 350, 300));
 
@@ -1066,15 +1124,27 @@ private void handleDecline(Volunteer volunteer) {
 
         adminDashboardPanel.add(TopPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1540, 140));
 
+        jLabel4.setText("5");
+
         javax.swing.GroupLayout totalEventsPanelLayout = new javax.swing.GroupLayout(totalEventsPanel);
         totalEventsPanel.setLayout(totalEventsPanelLayout);
         totalEventsPanelLayout.setHorizontalGroup(
             totalEventsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 350, Short.MAX_VALUE)
+            .addGroup(totalEventsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, totalEventsPanelLayout.createSequentialGroup()
+                    .addContainerGap(105, Short.MAX_VALUE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(157, Short.MAX_VALUE)))
         );
         totalEventsPanelLayout.setVerticalGroup(
             totalEventsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(totalEventsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, totalEventsPanelLayout.createSequentialGroup()
+                    .addContainerGap(142, Short.MAX_VALUE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(129, Short.MAX_VALUE)))
         );
 
         adminDashboardPanel.add(totalEventsPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 190, 350, 300));
@@ -1237,6 +1307,8 @@ private void handleDecline(Volunteer volunteer) {
 
     private void addEventsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEventsButtonActionPerformed
         EventAddDialog.showDialog(this);
+        refreshEventsTable();
+        refreshDashboardStats();
     }//GEN-LAST:event_addEventsButtonActionPerformed
 
     private void eventButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventButtonActionPerformed
@@ -1436,6 +1508,7 @@ private void handleDecline(Volunteer volunteer) {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel9;
