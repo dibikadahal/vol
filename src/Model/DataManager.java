@@ -30,7 +30,7 @@ public class DataManager {
     private static int queueSize = 0;
     
     //for voluntter ID counter - volunteer panel
-    private static int volunteerIdCounter = 1;
+   // private static int volunteerIdCounter = 1;
     
     //============INITIALIZATION=================
     public static void initialize(){
@@ -47,6 +47,49 @@ public class DataManager {
       }
     
     private static void loadDemoData(){
+        
+        //add demo approved volunteer fro CRUD testing
+        Volunteer approved1 = new Volunteer(
+                "Paarul Pradhan", "2005/09/21", "Female", "9863020080", "paarul@gmail.com",
+                "Medical", "Teaching, Communication, Leadership",
+                "Volunteers and Internships", "rul_paa",
+                PasswordUtil.hash("parul04"), "user"
+        );
+        approvedVolunteers.add(approved1);
+        User paarulUser = new User("rul_paa", PasswordUtil.hash("parul04"), "user");
+        users.add(paarulUser);
+
+        Volunteer approved2 = new Volunteer(
+                "Tisha Rajbhandari", "2007/01/07", "Female", "9543456545", "tisha@gmail.com",
+                "Compiuting", "Communication, Leadership",
+                "5 years teaching experience", "tisha_r",
+                PasswordUtil.hash("tisha12"), "user"
+        );
+        approvedVolunteers.add(approved2);
+        User tishaUser = new User("tisha_r", PasswordUtil.hash("tisha12"), "user");
+        users.add(tishaUser);
+
+        Volunteer approved3 = new Volunteer(
+                "Rujal Sharma Rajopadhyaya", "2007/01/10", "Male", "9765604561", "rujal@gmail.com",
+                "AI", "Communication, Leadership",
+                "Programming experiencee", "rujal_sharma",
+                PasswordUtil.hash("rujal234"), "user"
+        );
+        approvedVolunteers.add(approved3);
+        User rujalUser = new User("rujal_sharma", PasswordUtil.hash("rujal234"), "user");
+        users.add(rujalUser);
+        
+        int maxId = 0;
+        for (Volunteer v : approvedVolunteers){
+            if (v.getVolunteerId() > maxId){
+                maxId = v.getVolunteerId();
+            }
+        }
+        Volunteer.setIdCounter(maxId+1);
+        System.out.println("Next Volunteer ID will be: " + (maxId + 1));
+        System.out.println("Demo data loaded");
+
+        
         Volunteer demo1 = new Volunteer(
                 "Nalini Pokhrel", "2004/06/29", "Female", "9876889078", "nalini@gmail.com", "Nursing", "Social Service", 
                 "3 years experience in Volunteer coordination", "nalicha", PasswordUtil.hash("nalicha"), "user"
@@ -80,20 +123,8 @@ public class DataManager {
         enqueue(demo4);
         enqueue(demo5);
         
-        /*
-        //add demo approved volunteer fro CRUD testing
-        Volunteer approved1 = new Volunteer(
-                "Aarogya Thapa", "2000/12/05", "Female", "9876543212", "aru@example.com",
-                "Bachelor's in Education", "Teaching, Communication, Leadership",
-                "5 years teaching experience", "aarogya_t",
-                PasswordUtil.hash("aarogya"), "user"
-        );
-        approvedVolunteers.add(approved1);
-        User aarogyaUser = new User("aarogya_t", PasswordUtil.hash("aarogya"), "user");
-        users.add(aarogyaUser);
         
-        System.out.println("Demo data loaded");
-        */
+
     }
     
     private static void loadDemoEvents(){
@@ -378,7 +409,7 @@ public class DataManager {
         return null;
    }
     
-    
+
     //READ = SEARCH VOLUNTEERS -add later
     
     
@@ -528,7 +559,7 @@ public class DataManager {
     //add method to get volunteer by ID  
     public static boolean approveVolunteer(Volunteer volunteer){
         //generate ID
-            volunteer.setVolunteerId(volunteerIdCounter++);
+           // volunteer.setVolunteerId(volunteerIdCounter++);
             
             // 2. Update status
         volunteer.setStatus("Approved");
