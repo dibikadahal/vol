@@ -189,6 +189,10 @@ totalEventsPanel.removeAll();
 
     }
     
+    public JTable getVolunteerTable(){
+        return volunteerTable;
+    }
+    
 
 
     
@@ -978,6 +982,7 @@ private void handleDecline(Volunteer volunteer) {
         jLabel6 = new javax.swing.JLabel();
         searchTextField = new javax.swing.JTextField();
         sortByComboBox = new javax.swing.JComboBox<>();
+        volunteerRefreshButton = new javax.swing.JButton();
         EventPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -1050,14 +1055,14 @@ private void handleDecline(Volunteer volunteer) {
         adminDashboardPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         lblTotalVolunteers.setFont(new java.awt.Font("Perpetua Titling MT", 1, 150)); // NOI18N
-        lblTotalVolunteers.setText("0");
+        lblTotalVolunteers.setText("3");
 
         javax.swing.GroupLayout totalVolunteersPanelLayout = new javax.swing.GroupLayout(totalVolunteersPanel);
         totalVolunteersPanel.setLayout(totalVolunteersPanelLayout);
         totalVolunteersPanelLayout.setHorizontalGroup(
             totalVolunteersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, totalVolunteersPanelLayout.createSequentialGroup()
-                .addContainerGap(128, Short.MAX_VALUE)
+                .addContainerGap(153, Short.MAX_VALUE)
                 .addComponent(lblTotalVolunteers)
                 .addGap(120, 120, 120))
         );
@@ -1203,6 +1208,14 @@ private void handleDecline(Volunteer volunteer) {
         });
         volunteerPanel.add(sortByComboBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(990, 150, 80, 30));
 
+        volunteerRefreshButton.setText("Refresh");
+        volunteerRefreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                volunteerRefreshButtonActionPerformed(evt);
+            }
+        });
+        volunteerPanel.add(volunteerRefreshButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 150, 90, 30));
+
         Parent1.add(volunteerPanel, "card3");
 
         EventPanel.setBackground(new java.awt.Color(214, 228, 231));
@@ -1318,6 +1331,10 @@ private void handleDecline(Volunteer volunteer) {
     private void calendarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calendarButtonActionPerformed
     switchPanel("card5"); // CalendarPanel
     }//GEN-LAST:event_calendarButtonActionPerformed
+
+    private void volunteerRefreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volunteerRefreshButtonActionPerformed
+        volunteerCRUDController.refreshApprovedVolunteerTable();
+    }//GEN-LAST:event_volunteerRefreshButtonActionPerformed
     
 
     
@@ -1450,6 +1467,7 @@ private void handleDecline(Volunteer volunteer) {
         loadEvents();
     }
 
+
     /*
     // Refresh approved volunteers table (Volunteer Record panel)
     public void refreshApprovedVolunteerTable() {
@@ -1528,6 +1546,7 @@ private void handleDecline(Volunteer volunteer) {
     private javax.swing.JPanel upcomingEventsPanel;
     private javax.swing.JButton volunteerButton;
     private javax.swing.JPanel volunteerPanel;
+    private javax.swing.JButton volunteerRefreshButton;
     private javax.swing.JTable volunteerTable;
     private javax.swing.JLabel welcomeLabel;
     // End of variables declaration//GEN-END:variables
