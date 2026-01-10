@@ -14,14 +14,17 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 import java.util.List;
 
+
 /**
  * CRUD Controller - for handling create, read, update and delete operations
  */
 public class VolunteerCRUDController {
     private AdminDashboard dashboard;
+    private InsertionSort sortController;
     
     public VolunteerCRUDController(AdminDashboard dashboard) {
     this.dashboard = dashboard;
+    this.sortController = new InsertionSort();
     }
    
     
@@ -302,12 +305,32 @@ public class VolunteerCRUDController {
             model.addRow(new Object[]{
                 v.getVolunteerId(),
                 v.getFullName(),
-                v.getGender(),
                 v.getContactNumber(),
                 v.getEmail(),
-             //   v.getField(),
+             "Approved",
                 v.getUsername()
             });
         }
   }
+    
+    
+    //=--------------get volunteers sorted by name in ascending order----------------]
+    public LinkedList<Volunteer> getVolunteersSortedByNameAscending(){
+        LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
+        return sortController.sortByNameAscending(volunteers);
+    }
+    
+    //=--------------get volunteers sorted by name in descending order----------------]
+    public LinkedList<Volunteer> getVolunteersSortedByNameDescending() {
+        LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
+        return sortController.sortByNameDescending(volunteers);
+    }
+    
+    /**
+     * Demonstrate sorting process (optional - for testing)
+     */
+   public void demonstrateSorting(boolean ascending) {
+        LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
+        sortController.demonstrateSorting(volunteers, ascending);
+    }
 }
