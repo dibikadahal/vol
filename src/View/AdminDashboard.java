@@ -25,6 +25,10 @@ import javax.swing.Box;
 import javax.swing.JOptionPane;
 import java.util.LinkedList;  
 import Controller.InsertionSort;
+import java.util.ArrayList;
+import Controller.MergeSort;
+import Controller.SelectionSort;
+import Model.Event;
 
 
 
@@ -1050,6 +1054,55 @@ private void handleDecline(Volunteer volunteer) {
                 }
     }
  }
+        
+        
+      //==============EVENT SORT====================
+//handle sorting based on combo box selection
+    private void handleEventSort(String sortOption) {
+        ArrayList<Event> events = new ArrayList<>(DataManager.getEvents());
+
+        if (events.isEmpty()) {
+            return;
+        }
+
+        // Apply sorting based on selection
+        switch (sortOption) {
+            case "Event Name (Asc)":
+                MergeSort.sortByNameAscending(events);
+                break;
+
+            case "Event Name (Desc)":
+                MergeSort.sortNameByDescending(events);
+                break;
+
+            case "Date (Asc)":
+                SelectionSort.sortByDateAscending(events);
+                break;
+
+            case "Date (Desc)":
+                SelectionSort.sortByDateDescending(events);
+                break;
+
+            default:
+                return; // "Sort By" selected - do nothing
+        }
+
+        // Clear and reload table with sorted data
+        eventsTableModel.setRowCount(0);
+
+        for (Event event : events) {
+            Object[] row = {
+                event.getEventId(),
+                event.getEventName(),
+                event.getStartDate(),
+                event.getDuration(),
+                event.getLocation(),
+                event.getOrganizerName(),
+                event.getEventId() // Pass event ID to buttons
+            };
+            eventsTableModel.addRow(row);
+        }
+    }
  
     
    
@@ -1362,7 +1415,12 @@ private void handleDecline(Volunteer volunteer) {
         EventPanel.add(addEventsButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 160, -1, -1));
 
         sortEventsJCombo.setFont(new java.awt.Font("Sitka Text", 0, 18)); // NOI18N
-        sortEventsJCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sort By", "Name", "Date" }));
+        sortEventsJCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sort By", "Event Name (Asc)", "Event Name (Desc)", "Date (Asc)", "Date (Desc)" }));
+        sortEventsJCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortEventsJComboActionPerformed(evt);
+            }
+        });
         EventPanel.add(sortEventsJCombo, new org.netbeans.lib.awtextra.AbsoluteConstraints(980, 160, -1, -1));
 
         jLabel3.setFont(new java.awt.Font("Sitka Text", 0, 18)); // NOI18N
@@ -1455,6 +1513,13 @@ private void handleDecline(Volunteer volunteer) {
     private void volunteerRefreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volunteerRefreshButtonActionPerformed
         volunteerCRUDController.refreshApprovedVolunteerTable();
     }//GEN-LAST:event_volunteerRefreshButtonActionPerformed
+
+    private void sortEventsJComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortEventsJComboActionPerformed
+        String selected = (String) sortEventsJCombo.getSelectedItem();
+    if (selected != null && !selected.equals("Sort By")) {
+        handleEventSort(selected);
+    }
+    }//GEN-LAST:event_sortEventsJComboActionPerformed
     
 
     
