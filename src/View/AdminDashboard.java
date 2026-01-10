@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import Controller.MergeSort;
 import Controller.SelectionSort;
 import Model.Event;
+import Controller.BinarySearch;
 
 
 
@@ -55,6 +56,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     private DefaultTableModel eventsTableModel;
     private javax.swing.JLabel lblTotalEvents;
     private InsertionSort sortController;
+    private BinarySearch binarySearchController;
 
 
         
@@ -69,11 +71,13 @@ public class AdminDashboard extends javax.swing.JFrame {
         controller = new AdminController(this);
         volunteerCRUDController = new VolunteerCRUDController(this);
         sortController = new InsertionSort();
+        binarySearchController = new BinarySearch();
         
         setupPendingVolunteerTable();
         setupApprovedVolunteerTable();
         setupEventsTable();
-        setupSearchListener();
+        setupSearchListener(); //(for volunteer)
+        setupEventSearchListener(); //(for events)
        
         //calling date time and Welcome message
         updateWelcomeMessage(user.getUsername(), user.getRole());
@@ -1108,6 +1112,61 @@ private void handleDecline(Volunteer volunteer) {
         public void refreshEventsTable(){
             loadEvents();
         }  
+        
+        //=============events search============
+        private void setupEventSearchListener() {
+        eventsSearchBox.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                performEventSearch();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                performEventSearch();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                performEventSearch();
+            }
+        });
+    }
+        
+        private void performEventSearch() {
+        String searchTerm = eventsSearchBox.getText().trim();
+
+        if (searchTerm.isEmpty()) {
+            // If search is empty, show all events
+            loadEvents();
+            return;
+        }
+
+        // Use binary search controller (FIXED class name)
+        ArrayList<Model.Event> searchResults = binarySearchController.searchByName(DataManager.getEvents(), searchTerm);
+
+        displayEventSearchResults(searchResults);
+    }
+
+// Keep your displayEventSearchResults method (it's correct)
+    private void displayEventSearchResults(ArrayList<Model.Event> results) {
+        eventsTableModel.setRowCount(0);
+
+        if (results != null && !results.isEmpty()) {
+            for (Model.Event event : results) {
+                Object[] row = {
+                    event.getEventId(),
+                    event.getEventName(),
+                    event.getStartDate(),
+                    event.getDuration(),
+                    event.getLocation(),
+                    event.getOrganizerName(),
+                    event.getEventId()
+                };
+                eventsTableModel.addRow(row);
+            }
+            System.out.println("Displaying " + results.size() + " event(s)");
+        } else {
+            System.out.println("No events found matching: " + eventsSearchBox.getText());
+        }
+    }
    
 
     /**
@@ -1425,11 +1484,17 @@ private void handleDecline(Volunteer volunteer) {
                 sortEventsJComboActionPerformed(evt);
             }
         });
-        EventPanel.add(sortEventsJCombo, new org.netbeans.lib.awtextra.AbsoluteConstraints(980, 160, -1, -1));
+        EventPanel.add(sortEventsJCombo, new org.netbeans.lib.awtextra.AbsoluteConstraints(910, 160, -1, -1));
 
         jLabel3.setFont(new java.awt.Font("Sitka Text", 0, 18)); // NOI18N
         jLabel3.setText("Search: ");
         EventPanel.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(1120, 160, 80, 30));
+
+        eventsSearchBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                eventsSearchBoxActionPerformed(evt);
+            }
+        });
         EventPanel.add(eventsSearchBox, new org.netbeans.lib.awtextra.AbsoluteConstraints(1200, 160, 190, 30));
 
         eventsRefreshButton.setFont(new java.awt.Font("Sitka Text", 0, 18)); // NOI18N
@@ -1439,7 +1504,7 @@ private void handleDecline(Volunteer volunteer) {
                 eventsRefreshButtonActionPerformed(evt);
             }
         });
-        EventPanel.add(eventsRefreshButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 160, 130, 30));
+        EventPanel.add(eventsRefreshButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 160, 100, 30));
 
         Parent1.add(EventPanel, "card4");
 
@@ -1542,6 +1607,17 @@ private void handleDecline(Volunteer volunteer) {
         //reload original events data
         refreshEventsTable();
     }//GEN-LAST:event_eventsRefreshButtonActionPerformed
+
+    private void eventsSearchBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventsSearchBoxActionPerformed
+        // Reset the combo box to default
+        sortEventsJCombo.setSelectedIndex(0);
+
+        // Clear search box
+        eventsSearchBox.setText("");
+
+        // Reload original events data
+        refreshEventsTable();
+    }//GEN-LAST:event_eventsSearchBoxActionPerformed
     
 
     
