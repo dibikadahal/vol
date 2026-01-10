@@ -21,10 +21,12 @@ import java.util.List;
 public class VolunteerCRUDController {
     private AdminDashboard dashboard;
     private InsertionSort sortController;
+    private LinearSearch searchController;
     
     public VolunteerCRUDController(AdminDashboard dashboard) {
     this.dashboard = dashboard;
     this.sortController = new InsertionSort();
+    this.searchController = new LinearSearch();
     }
    
     
@@ -313,7 +315,7 @@ public class VolunteerCRUDController {
         }
   }
     
-    
+    //================SORTING==========================
     //=--------------get volunteers sorted by name in ascending order----------------]
     public LinkedList<Volunteer> getVolunteersSortedByNameAscending(){
         LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
@@ -333,4 +335,36 @@ public class VolunteerCRUDController {
         LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
         sortController.demonstrateSorting(volunteers, ascending);
     }
+   
+   
+   //===================SEARCHING===========================
+   //Search volunteers by name (partial match)
+   public LinkedList<Volunteer> searchVolunteersByName(String searchTerm){
+       LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
+       return searchController.searchByPartialName(volunteers, searchTerm);
+   }
+   
+   //search volunteers by multiple criteria  (name, email, contact)
+   public LinkedList<Volunteer> searchVolunteers(String searchTerm) {
+        LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
+        return searchController.searchByMultipleCriteria(volunteers, searchTerm);
+    }
+   
+   //search for exact name match
+    public Volunteer searchExactName(String name) {
+        LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
+        return searchController.searchByExactName(volunteers, name);
+    }
+    
+    //search by id
+    public Volunteer searchById(int volunteerId) {
+        LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
+        return searchController.searchById(volunteers, volunteerId);
+    }
+    
+    //demonstrate linear search process
+    public void demonstrateSearch(String searchName) {
+        LinkedList<Volunteer> volunteers = DataManager.getApprovedVolunteers();
+        searchController.demonstrateLinearSearch(volunteers, searchName);
+    }  
 }
