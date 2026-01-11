@@ -9,10 +9,12 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import Model.Event;
 
 public class EventAddDialog extends JDialog{
     
     //input fields
+    private JTextField eventIdField;
     private JTextField eventNameField;
     private JTextArea descriptionArea;
     private JTextField startDateField;
@@ -32,11 +34,28 @@ public class EventAddDialog extends JDialog{
     private JLabel eventStatusError;
     private JLabel organizerNameError;
     private JLabel organizerContactError;
+    
+    //mode tracking
+    private boolean isUpdateMode = false;
+    private Event eventToUpdate = null;
+    private boolean saveSuccessful = false;
+    
 
     public EventAddDialog(JFrame parent) {
-        super(parent, "Add New Event", true); // Modal dialog
+        this(parent, null);
+    }
+    
+    public EventAddDialog(JFrame parent, Event event){
+        super(parent, event == null? "Add New Event" : "UpdateEvent", true); // Modal dialog
+        this.isUpdateMode = (event != null);
+        this.eventToUpdate = event;
 
         initComponents();
+        
+        if (isUpdateMode){
+            popularFields(event); //firlds with existing data
+        }
+        
         initValidation();
         setLocationRelativeTo(parent); // Center on parent
     }
@@ -60,11 +79,10 @@ public class EventAddDialog extends JDialog{
         titlePanel.setBackground(new Color(91, 158, 165));
         titlePanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
-        JLabel titleLabel = new JLabel("ADD NEW EVENT");
+        JLabel titleLabel = new JLabel(isUpdateMode ? "UPDATE EVENT" : "ADD NEW EVENT");
         titleLabel.setFont(new Font("Sitka Text", Font.BOLD, 28));
         titleLabel.setForeground(Color.WHITE);
         titlePanel.add(titleLabel);
-
         mainPanel.add(titlePanel, BorderLayout.NORTH);
 
         // Form Panel (Scrollable)
@@ -72,6 +90,14 @@ public class EventAddDialog extends JDialog{
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setBackground(Color.WHITE);
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+        
+        // Event ID field (only show in update mode)
+        if (isUpdateMode) {
+            Object[] eventIdComponents = addInputFieldWithError(formPanel, "Event ID (Cannot be changed):", false);
+            eventIdField = (JTextField) eventIdComponents[0];
+            eventIdField.setEditable(false);
+            eventIdField.setBackground(new Color(240, 240, 240));
+        }
         
         //add all input fields with error labels
         Object[] eventNameComponents = addInputFieldWithError(formPanel, "Event Name", false);
@@ -95,7 +121,7 @@ public class EventAddDialog extends JDialog{
         locationError = (JLabel) locationComponents[1];
 
         eventTypeCombo = addComboBoxField(formPanel, "Event Type:",
-                new String[]{"Workshop", "Training", "Community Service", "Fundraiser", "Seminar", "Competition", "Other"});
+                new String[]{"Event Type", "Workshop", "Training", "Community Service", "Fundraiser", "Seminar", "Competition", "Other"});
 
         Object[] eventStatusComponents = addInputFieldWithError(formPanel, "Event Status:", false);
         eventStatusField = (JTextField) eventStatusComponents[0];
@@ -113,7 +139,6 @@ public class EventAddDialog extends JDialog{
         JScrollPane scrollPane = new JScrollPane(formPanel);
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Button Panel
@@ -122,10 +147,10 @@ public class EventAddDialog extends JDialog{
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 0));
 
-        // Save Button
-        JButton saveButton = new JButton("SAVE");
+        // Save Button / Update button
+        JButton saveButton = new JButton(isUpdateMode ? "UPDATE" : "SAVE");
         saveButton.setFont(new Font("SansSerif", Font.BOLD, 16));
-        saveButton.setBackground(new Color(91, 158, 165));
+        saveButton.setBackground(isUpdateMode ? new Color(76, 175, 80) : new Color(91, 158, 165));
         saveButton.setForeground(Color.WHITE);
         saveButton.setFocusPainted(false);
         saveButton.setBorderPainted(false);
@@ -144,10 +169,25 @@ public class EventAddDialog extends JDialog{
 
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
-
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
+    }
+    
+    //populates field with existing event data (for update mode)
+    private void popularFields(Event event) {
+        if (eventIdField != null) {
+            eventIdField.setText(event.getEventId());
+        }
+        eventNameField.setText(event.getEventName());
+        descriptionArea.setText(event.getDescription());
+        startDateField.setText(event.getStartDate());
+        endDateField.setText(event.getEndDate());
+        locationField.setText(event.getLocation());
+        eventTypeCombo.setSelectedItem(event.getEventType());
+        eventStatusField.setText(event.getEventStatus());
+        organizerNameField.setText(event.getOrganizerName());
+        organizerContactField.setText(event.getOrganizerContact());
     }
     
     //Initialize real time validation
@@ -305,9 +345,12 @@ public class EventAddDialog extends JDialog{
         }
 
         if (isValid) {
-            // TODO: Add save logic here (call controller)
-            JOptionPane.showMessageDialog(this, "Event saved successfully!",
-                    "Success", JOptionPane.INFORMATION_MESSAGE);
+            saveSuccessful = true;
+
+            // Show success message with appropriate text
+            String message = isUpdateMode ? "Event updated successfully!" : "Event saved successfully!";
+            JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Please fix all validation errors",
@@ -481,27 +524,15 @@ public class EventAddDialog extends JDialog{
         return comboBox;
     }
     
-    
-    // Show dialog with dimmed background
-    public static void showDialog(JFrame parent) {
-        final JPanel glassPane = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                g.setColor(new Color(0, 0, 0, 120));
-                g.fillRect(0, 0, getWidth(), getHeight());
-            }
-        };
-
-        glassPane.setOpaque(false);
-        parent.setGlassPane(glassPane);
-        glassPane.setVisible(true);
-
-        EventAddDialog dialog = new EventAddDialog(parent);
-        dialog.setVisible(true);
-
-        glassPane.setVisible(false);
+    //check if save was successful
+    public boolean isSaveSuccessful(){
+        return saveSuccessful;
     }
-
+    
+    //check if in update mode
+    public boolean isUpdateMode() {
+        return isUpdateMode;
+    }
     
     // Getters for field values (for Controller to use)
     public String getEventName() {
@@ -539,4 +570,49 @@ public class EventAddDialog extends JDialog{
     public String getEventOrganizerContact() {
         return organizerContactField.getText().trim();
     }
+    
+    //get event id for update mode
+    public String getEventId() {
+        return isUpdateMode ? eventIdField.getText().trim() : null;
+    }
+    
+        // Show dialog with dimmed background
+public static void showDialog(JFrame parent) {
+        final JPanel glassPane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(new Color(0, 0, 0, 120));
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        glassPane.setOpaque(false);
+        parent.setGlassPane(glassPane);
+        glassPane.setVisible(true);
+        
+        EventAddDialog dialog = new EventAddDialog(parent);  // ADD mode
+        dialog.setVisible(true);
+        
+        glassPane.setVisible(false);
+    }
+
+    //static method for update mode
+public static EventAddDialog showDialogForUpdate(JFrame parent, Event event) {
+        final JPanel glassPane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(new Color(0, 0, 0, 120));
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        glassPane.setOpaque(false);
+        parent.setGlassPane(glassPane);
+        glassPane.setVisible(true);
+
+        EventAddDialog dialog = new EventAddDialog(parent, event);  // UPDATE mode
+        dialog.setVisible(true);
+
+        glassPane.setVisible(false);
+
+        return dialog;
+    }    
 }
