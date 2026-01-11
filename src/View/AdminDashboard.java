@@ -4,7 +4,6 @@
  */
 package View;
 
-
 import Model.Volunteer;
 import Controller.AdminController;
 import Controller.VolunteerCRUDController;
@@ -12,15 +11,11 @@ import Model.DataManager;
 import Model.User;
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.DefaultCellEditor;
 import java.awt.Font;
 import javax.swing.Timer;
 import java.util.List;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
 import java.util.LinkedList;  
@@ -31,11 +26,9 @@ import Controller.SelectionSort;
 import Model.Event;
 import Controller.BinarySearch;
 import Controller.EventCRUDController;
+import Controller.ActionStackController;
+import Model.Action;
 
-
-
-
- 
 public class AdminDashboard extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(AdminDashboard.class.getName());
@@ -59,7 +52,9 @@ public class AdminDashboard extends javax.swing.JFrame {
     private InsertionSort sortController;
     private BinarySearch binarySearchController;
     private EventCRUDController eventCRUDController;
-
+    private ActionStackController actionStackController;
+    private DefaultListModel<String> activityListModel;
+    private javax.swing.JList<String> activityList;
 
         
     /**
@@ -76,17 +71,22 @@ public class AdminDashboard extends javax.swing.JFrame {
         binarySearchController = new BinarySearch();
         eventCRUDController = new EventCRUDController(this);
         
+        actionStackController = new ActionStackController(); 
+        actionStackController.setDashboard(this);
+        
+        activityList = jList1;
+        setupActivityListModel();
+        
         setupPendingVolunteerTable();
         setupApprovedVolunteerTable();
         setupEventsTable();
         setupSearchListener(); //(for volunteer)
         setupEventSearchListener(); //(for events)
-       
+        
         //calling date time and Welcome message
         updateWelcomeMessage(user.getUsername(), user.getRole());
         startDateTimeDisplay();
-        
-        
+          
         //make JFrame full screen / maximized
         Parent.setPreferredSize(null);
         this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
@@ -203,12 +203,74 @@ totalEventsPanel.removeAll();
 
     }
     
+    
+// Add this method
+    private void setupActivityListModel() {
+        activityListModel = new DefaultListModel<>();
+        activityList.setModel(activityListModel);
+        refreshActivityLog();
+    }
+
+// Refresh activity log
+    public void refreshActivityLog() {
+        if (activityListModel == null) {
+        activityListModel = new DefaultListModel<>();
+        activityList.setModel(activityListModel);
+    }
+    
+    activityListModel.clear();
+    Action[] actions = actionStackController.getAllActions();
+    
+    if (actions.length == 0) {
+        activityListModel.addElement("No recent activity");
+    } else {
+        for (Action action : actions) {
+            activityListModel.addElement(action.getFormattedDescription());
+        }
+    }
+    
+    updateUndoButton();
+}
+
+// Handle undo button click
+    private void handleUndo() {
+        actionStackController.undoLastAction();
+    }
+
+// Handle clear log
+    private void handleClearLog() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to clear all activity?",
+                "Clear Activity Log",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            actionStackController.clearAllActions();
+        }
+    }
+
+// Update undo button state
+    private void updateUndoButton() {
+        undoButton.setEnabled(actionStackController.canUndo());
+    }
+
+// Refresh all data
+    public void refreshAllData() {
+        refreshApprovedVolunteerTable();
+        refreshPendingVolunteerTable();
+        refreshEventsTable();
+        refreshDashboardStats();
+    }
+
+// Get action stack controller
+    public ActionStackController getActionStackController() {
+        return actionStackController;
+    }
+    
     public JTable getVolunteerTable(){
         return volunteerTable;
     }
-    
-
-
+   
     
     private void setupPendingVolunteerTable(){
         //configuring the existing table
@@ -1251,6 +1313,7 @@ private void handleDecline(Volunteer volunteer) {
         calendarButton = new javax.swing.JButton();
         eventButton = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
+        logOutButton = new javax.swing.JButton();
         Parent1 = new javax.swing.JPanel();
         adminDashboardPanel = new javax.swing.JPanel();
         totalVolunteersPanel = new javax.swing.JPanel();
@@ -1261,12 +1324,21 @@ private void handleDecline(Volunteer volunteer) {
         jScrollPane3 = new javax.swing.JScrollPane();
         pendingVolunteerTable = new javax.swing.JTable();
         graphPanel = new javax.swing.JPanel();
+        activityTitlePanel = new javax.swing.JPanel();
+        jLabel10 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList<>();
+        activityButtonPanel = new javax.swing.JPanel();
+        undoButton = new javax.swing.JButton();
+        clearButton = new javax.swing.JButton();
         TopPanel = new javax.swing.JPanel();
         welcomeLabel = new javax.swing.JLabel();
         dateTimeLabel = new javax.swing.JLabel();
         totalEventsPanel = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         upcomingEventsPanel = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
         volunteerPanel = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -1342,6 +1414,16 @@ private void handleDecline(Volunteer volunteer) {
         navigator.add(jLabel9);
         jLabel9.setBounds(0, 0, 250, 170);
 
+        logOutButton.setFont(new java.awt.Font("Segoe UI Emoji", 0, 18)); // NOI18N
+        logOutButton.setText("Log Out");
+        logOutButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logOutButtonActionPerformed(evt);
+            }
+        });
+        navigator.add(logOutButton);
+        logOutButton.setBounds(60, 930, 120, 40);
+
         Parent1.setLayout(new java.awt.CardLayout());
 
         adminDashboardPanel.setBackground(new java.awt.Color(214, 228, 231));
@@ -1395,16 +1477,65 @@ private void handleDecline(Volunteer volunteer) {
 
         adminDashboardPanel.add(newVolunteerRegistrationPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 530, 680, 430));
 
-        javax.swing.GroupLayout graphPanelLayout = new javax.swing.GroupLayout(graphPanel);
-        graphPanel.setLayout(graphPanelLayout);
-        graphPanelLayout.setHorizontalGroup(
-            graphPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 500, Short.MAX_VALUE)
-        );
-        graphPanelLayout.setVerticalGroup(
-            graphPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 430, Short.MAX_VALUE)
-        );
+        graphPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        activityTitlePanel.setBackground(new java.awt.Color(252, 252, 252));
+        activityTitlePanel.setPreferredSize(new java.awt.Dimension(216, 60));
+        activityTitlePanel.setLayout(new java.awt.BorderLayout());
+
+        jLabel10.setFont(new java.awt.Font("Perpetua Titling MT", 1, 20)); // NOI18N
+        jLabel10.setForeground(new java.awt.Color(91, 158, 165));
+        jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel10.setText("RECENT ACTIVITY");
+        jLabel10.setToolTipText("");
+        activityTitlePanel.add(jLabel10, java.awt.BorderLayout.CENTER);
+
+        graphPanel.add(activityTitlePanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 20, 312, -1));
+
+        jList1.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
+        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane4.setViewportView(jList1);
+
+        graphPanel.add(jScrollPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(37, 90, 430, 267));
+
+        activityButtonPanel.setBackground(new java.awt.Color(255, 255, 255));
+        activityButtonPanel.setPreferredSize(new java.awt.Dimension(460, 60));
+        activityButtonPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        undoButton.setBackground(new java.awt.Color(255, 125, 0));
+        undoButton.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
+        undoButton.setForeground(new java.awt.Color(255, 255, 255));
+        undoButton.setText("⟲ UNDO");
+        undoButton.setBorderPainted(false);
+        undoButton.setFocusPainted(false);
+        undoButton.setPreferredSize(new java.awt.Dimension(100, 35));
+        undoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                undoButtonActionPerformed(evt);
+            }
+        });
+        activityButtonPanel.add(undoButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 10, 90, 30));
+
+        clearButton.setBackground(new java.awt.Color(200, 200, 200));
+        clearButton.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
+        clearButton.setForeground(new java.awt.Color(60, 60, 60));
+        clearButton.setText("CLEAR");
+        clearButton.setBorderPainted(false);
+        clearButton.setFocusPainted(false);
+        clearButton.setPreferredSize(new java.awt.Dimension(100, 35));
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+        activityButtonPanel.add(clearButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(245, 10, 80, 30));
+
+        graphPanel.add(activityButtonPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 370, 460, 50));
 
         adminDashboardPanel.add(graphPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(840, 530, 500, 430));
 
@@ -1447,16 +1578,15 @@ private void handleDecline(Volunteer volunteer) {
 
         adminDashboardPanel.add(totalEventsPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 190, 350, 300));
 
-        javax.swing.GroupLayout upcomingEventsPanelLayout = new javax.swing.GroupLayout(upcomingEventsPanel);
-        upcomingEventsPanel.setLayout(upcomingEventsPanelLayout);
-        upcomingEventsPanelLayout.setHorizontalGroup(
-            upcomingEventsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 420, Short.MAX_VALUE)
-        );
-        upcomingEventsPanelLayout.setVerticalGroup(
-            upcomingEventsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        upcomingEventsPanel.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel7.setFont(new java.awt.Font("Perpetua Titling MT", 1, 24)); // NOI18N
+        jLabel7.setText("TOTAL ONGOING EVENTS");
+        upcomingEventsPanel.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 10, 380, 70));
+
+        jLabel8.setFont(new java.awt.Font("Perpetua Titling MT", 1, 150)); // NOI18N
+        jLabel8.setText("1");
+        upcomingEventsPanel.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 60, 240, 230));
 
         adminDashboardPanel.add(upcomingEventsPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(920, 190, 420, 300));
 
@@ -1716,6 +1846,40 @@ private void handleDecline(Volunteer volunteer) {
         // Reload original events data
         refreshEventsTable();
     }//GEN-LAST:event_eventsSearchBoxActionPerformed
+
+    private void undoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoButtonActionPerformed
+      handleUndo();
+    }//GEN-LAST:event_undoButtonActionPerformed
+
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+        handleClearLog();
+    }//GEN-LAST:event_clearButtonActionPerformed
+
+    private void logOutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logOutButtonActionPerformed
+        //confirm logout
+        int confirm = JOptionPane.showConfirmDialog(
+        this, 
+         "Are you sure you want to logout?",
+         "Confirm logout",
+         JOptionPane.YES_NO_OPTION,
+         JOptionPane.QUESTION_MESSAGE
+        );
+        
+        if (confirm == JOptionPane.YES_OPTION){
+        //Stop the date/ time timer
+        stopDateTimeDisplay();
+        
+        //close current dashboard
+        this.dispose();
+        
+        // Open login frame
+        java.awt.EventQueue.invokeLater(() -> {
+            View.LogInFrame loginFrame = new View.LogInFrame();
+            loginFrame.setLocationRelativeTo(null);
+            loginFrame.setVisible(true);
+        });
+    }
+    }//GEN-LAST:event_logOutButtonActionPerformed
     
 
     
@@ -1891,10 +2055,13 @@ private void handleDecline(Volunteer volunteer) {
     private javax.swing.JPanel Parent1;
     private javax.swing.JLabel PendingVolunteersLabel;
     private javax.swing.JPanel TopPanel;
+    private javax.swing.JPanel activityButtonPanel;
+    private javax.swing.JPanel activityTitlePanel;
     private javax.swing.JButton addEventsButton;
     private javax.swing.JButton adminDashboardButton;
     private javax.swing.JPanel adminDashboardPanel;
     private javax.swing.JButton calendarButton;
+    private javax.swing.JButton clearButton;
     private javax.swing.JLabel dateTimeLabel;
     private javax.swing.JButton eventButton;
     private javax.swing.JButton eventsRefreshButton;
@@ -1902,16 +2069,22 @@ private void handleDecline(Volunteer volunteer) {
     private javax.swing.JPanel graphPanel;
     private javax.swing.JTable jEventTable;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JList<String> jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JLabel lblTotalVolunteers;
+    private javax.swing.JButton logOutButton;
     private javax.swing.JPanel navigator;
     private javax.swing.JPanel newVolunteerRegistrationPanel;
     private javax.swing.JTable pendingVolunteerTable;
@@ -1921,6 +2094,7 @@ private void handleDecline(Volunteer volunteer) {
     private javax.swing.JComboBox<String> sortEventsJCombo;
     private javax.swing.JPanel totalEventsPanel;
     private javax.swing.JPanel totalVolunteersPanel;
+    private javax.swing.JButton undoButton;
     private javax.swing.JPanel upcomingEventsPanel;
     private javax.swing.JButton volunteerButton;
     private javax.swing.JPanel volunteerPanel;
@@ -1928,6 +2102,4 @@ private void handleDecline(Volunteer volunteer) {
     private javax.swing.JTable volunteerTable;
     private javax.swing.JLabel welcomeLabel;
     // End of variables declaration//GEN-END:variables
-
-   
 }
