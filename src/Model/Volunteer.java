@@ -184,6 +184,5 @@ public class Volunteer {
    //id counter
    public static void setIdCounter(int nextId) {
     idCounter = nextId;
-}
-    
+}  
 }
