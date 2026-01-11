@@ -28,6 +28,7 @@ public class DataManager {
     private static int front = 0;
     private static int rear = -1;
     private static int queueSize = 0;
+    private static int eventIdCounter = 6;
     
     //for voluntter ID counter - volunteer panel
    // private static int volunteerIdCounter = 1;
@@ -199,6 +200,7 @@ public class DataManager {
         events.add(event4);
         events.add(event5);
     }    
+        
     
     //==============QUEUE OPERATIONS (Manual Implementation)============
     //check if the queue is empty
@@ -606,43 +608,52 @@ public class DataManager {
     }
     
     
+    //generate unique event ID
+    public static String generateEventId() {
+        String id = String.format("EVT%03d", eventIdCounter);
+        eventIdCounter++;
+        return id;
+    }
    
     // ADD new event
-    public static boolean addEvent(Event event) {
-        if (event == null) {
-            return false;
-        }
-        events.add(event);
-        return true;
+public static boolean addEvent(Event event) {
+    if (event == null) {
+        return false;
     }
+    events.add(event);
+    System.out.println("✓ Added event: " + event.getEventName());
+    return true;
+}
 
     // UPDATE event
-    public static boolean updateEvent(String eventId, Event updatedEvent) {
-        for (int i = 0; i < events.size(); i++) {
-            if (events.get(i).getEventId().equals(eventId)) {
-                events.set(i, updatedEvent);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // DELETE event
-    public static boolean deleteEvent(String eventId) {
-        Event toRemove = null;
-        for (Event e : events) {
-            if (e.getEventId().equals(eventId)) {
-                toRemove = e;
-                break;
-            }
-        }
-
-        if (toRemove != null) {
-            events.remove(toRemove);
+public static boolean updateEvent(String eventId, Event updatedEvent) {
+    for (int i = 0; i < events.size(); i++) {
+        if (events.get(i).getEventId().equals(eventId)) {
+            events.set(i, updatedEvent);
+            System.out.println("✓ Updated event: " + updatedEvent.getEventName());
             return true;
         }
-        return false;
     }
+    return false;
+}
+
+    // DELETE event
+public static boolean deleteEvent(String eventId) {
+    Event toRemove = null;
+    for (Event e : events) {
+        if (e.getEventId().equals(eventId)) {
+            toRemove = e;
+            break;
+        }
+    }
+    
+    if (toRemove != null) {
+        events.remove(toRemove);
+        System.out.println("✓ Deleted event: " + toRemove.getEventName());
+        return true;
+    }
+    return false;
+}
 
     
     //===========STATISTICS==================
