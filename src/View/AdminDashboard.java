@@ -1113,7 +1113,30 @@ private void handleDecline(Volunteer volunteer) {
         
         //refresh events 
         public void refreshEventsTable(){
-            loadEvents();
+            //clear existing rows
+            eventsTableModel.setRowCount(0);
+            
+            //get all events from DataMane=ager
+            cachedEvents = DataManager.getEvents();
+            
+            if(cachedEvents.isEmpty()){
+                return;
+            }
+            // Populate table with events
+            for (Model.Event event : cachedEvents) {
+                Object[] row = {
+                    event.getEventId(),
+                    event.getEventName(),
+                    event.getStartDate(),
+                    event.getDuration(),
+                    event.getLocation(),
+                    event.getOrganizerName(),
+                    event.getEventId() // Pass event ID to buttons
+                };
+                eventsTableModel.addRow(row);
+            }
+
+            System.out.println("DEBUG: Refreshed events table with " + cachedEvents.size() + " events");
         }  
         
         //=============events search============
@@ -1612,13 +1635,27 @@ private void handleDecline(Volunteer volunteer) {
     }//GEN-LAST:event_sortByComboBoxActionPerformed
 
     private void addEventsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEventsButtonActionPerformed
-        EventAddDialog.showDialog(this);
-
-        // Check if we need to reload
-        // Since dialog handles its own validation, we just refresh after it closes
+        //show the add event dialog with glass poane effect
+        final JPanel glassPane = new JPanel(){
+            @Override
+            protected void paintComponent (Graphics g){
+                g.setColor(new Color(0, 0, 0, 120));
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        
+        glassPane.setOpaque(false);
+        this.setGlassPane(glassPane);
+        glassPane.setVisible(true);
+        
+        //create and show dialog
         EventAddDialog dialog = new EventAddDialog(this);
         dialog.setVisible(true);
-
+        
+        //hide glass pane after dialog closes
+        glassPane.setVisible(false);
+        
+        //check if save was successful
         if (dialog.isSaveSuccessful()) {
             // Create event using controller
             eventCRUDController.createEvent(
@@ -1661,6 +1698,7 @@ private void handleDecline(Volunteer volunteer) {
         eventsSearchBox.setText("");
         //reload original events data
         refreshEventsTable();
+        refreshDashboardStats();
     }//GEN-LAST:event_eventsRefreshButtonActionPerformed
 
     private void eventsSearchBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventsSearchBoxActionPerformed
