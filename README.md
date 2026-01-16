@@ -164,5 +164,4 @@ in the Software without restriction...
 **Dibika Dahal**
 * Github : [Dibika Dahal](https://github.com/dibikadahal)
 * LinkedIn : [Dibika Dahal](https://www.linkedin.com/in/dibika-dahal-a720642b0/)
-* Email : [Dibika Dahal](dibikadahal@gmail.com)
 
